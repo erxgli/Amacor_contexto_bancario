@@ -78,25 +78,36 @@ def ident_cat_num(df):
     return list_numericas,list_categoricas
 
 
-def onehot_encoder_train(df,columns):
-    #ESTA FUNCION SE ENCARGA DE HACER ONEHOT A LAS COLUMNAS QUE NECESITEMOS
-    #ESTE ONEHOT ES PARA HACER "TRAIN" DE LOS DATOS
-    #IMPORTAMOS LAS LIBRERIAS NECESARIAS
-    import pandas as pd 
-    import sklearn 
-    from sklearn.preprocessing import OneHotEncoder
+import pandas as pd
+from sklearn.preprocessing import OneHotEncoder
+
+def apply_onehot_encoding(df, categorical_columns):
+
+    # Copia del DataFrame original
+    df_copy = df.copy()
+
+    # Instancio el OneHotEncoder
     onehot = OneHotEncoder()
-    #APLICO EL ONEHOT A LAS COLUMNAS QUE SEAN NECESARIAS Y LA GUARDO EN AUX
-    aux = onehot.fit_transform(df[[columns]])
-    encoded_df = pd.DataFrame(aux.toarray(),columns= onehot.get_feature_names_out([columns]))
-    #RESETEO EL ÍNDICE DE LOS DATAFRAMES ANTES DE CONCATENARLOS
-    encoded_df.reset_index(drop=True,inplace=True)
-    df.reset_index(drop=True,inplace=True)
-    #CONCATENAMOS LOS DATAFRAMES
-    df = pd.concat([df,encoded_df],axis=1)
-    #ELIMINO LAS COLUMNAS ORIGINALES
-    df.drop(columns=[columns],inplace=True)
-    return df
+
+    # Aplico el OneHot a las columnas categóricas y guardo el resultado en 'encoded_data'
+    encoded_data = onehot.fit_transform(df[categorical_columns])
+
+    # Convierto 'encoded_data' en un DataFrame y lo llamo 'encoded_df'
+    encoded_df = pd.DataFrame(encoded_data.toarray(), columns=onehot.get_feature_names_out(categorical_columns))
+
+    # Reseteo el índice de los dos DataFrames antes de concatenarlos
+    df_copy.reset_index(drop=True, inplace=True)
+    encoded_df.reset_index(drop=True, inplace=True)
+
+    # Concateno los dos DataFrames
+    df_encoded = pd.concat([df_copy, encoded_df], axis=1)
+
+    # Elimino las columnas originales categóricas
+    df_encoded.drop(columns=categorical_columns, inplace=True)
+
+    return df_encoded
+
+
 
 def onehot_encoder_test(df,columns):
     #ESTA FUNCION SE ENCARGA DE HACER ONEHOT A LAS COLUMNAS QUE NECESITEMOS
